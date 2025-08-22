@@ -55,7 +55,7 @@ def load_models_with_fallbacks():
         scaler = joblib.load(os.path.join(MODELS_DIR, '90_percent_scaler.joblib'))
         # Use normalized features as fallback since 90_percent_features doesn't exist
         try:
-            model_features = joblib.load(os.path.join(MODELS_DIR, 'normalized_90_percent_features.joblib'))
+            model_features = joblib.load(os.path.join(MODELS_DIR, '90_percent_features.joblib'))
         except:
             # Create default features if none available
             model_features = ['age', 'gender', 'bmi', 'smoking', 'physical_activity', 'diabetes', 'alcohol', 'cholesterol', 'systolic_bp', 'diastolic_bp', 'glucose']
