@@ -12,7 +12,7 @@ import plotly.graph_objs as go
 import plotly.utils
 import json
 import os
-from config.paths import HIGH_PERFORMANCE_MODEL_PATH, HIGH_PERFORMANCE_SCALER_PATH, COMBINED_DATA_PATH
+from config.paths import HIGH_PERFORMANCE_MODEL_PATH, HIGH_PERFORMANCE_SCALER_PATH, COMBINED_DATA_PATH, MODELS_DIR
 
 app = Flask(__name__)
 app.secret_key = 'cardiovascular_risk_prediction_secret_key'
@@ -23,7 +23,19 @@ try:
     print("Real data 90% performance model loaded successfully!")
 except Exception as e:
     print(f"Error loading model: {e}")
-    model = None
+    # Try alternative path
+    try:
+        model = joblib.load(os.path.join(MODELS_DIR, 'real_data_90_percent_model.joblib'))
+        print("Real data 90% performance model loaded from alternative path!")
+    except Exception as e2:
+        print(f"Error loading model from alternative path: {e2}")
+        # Try fallback to smaller model
+        try:
+            model = joblib.load(os.path.join(MODELS_DIR, '90_percent_model.joblib'))
+            print("Fallback to 90% model loaded successfully!")
+        except Exception as e3:
+            print(f"Error loading fallback model: {e3}")
+            model = None
 
 # Load the scaler
 try:
@@ -31,15 +43,46 @@ try:
     print("Real data 90% performance scaler loaded successfully!")
 except Exception as e:
     print(f"Error loading scaler: {e}")
-    scaler = None
+    # Try alternative path
+    try:
+        scaler = joblib.load(os.path.join(MODELS_DIR, 'real_data_90_percent_scaler.joblib'))
+        print("Real data 90% performance scaler loaded from alternative path!")
+    except Exception as e2:
+        print(f"Error loading scaler from alternative path: {e2}")
+        # Try fallback to smaller model scaler
+        try:
+            scaler = joblib.load(os.path.join(MODELS_DIR, '90_percent_scaler.joblib'))
+            print("Fallback to 90% model scaler loaded successfully!")
+        except Exception as e3:
+            print(f"Error loading fallback scaler: {e3}")
+            scaler = None
 
 # Load the feature names for the real data 90% model
 try:
-    model_features = joblib.load(os.path.join('models', 'real_data_90_percent_features.joblib'))
+    model_features = joblib.load(os.path.join(MODELS_DIR, 'real_data_90_percent_features.joblib'))
     print("Real data model features loaded successfully!")
 except Exception as e:
     print(f"Error loading model features: {e}")
-    model_features = None
+    # Try alternative path
+    try:
+        model_features = joblib.load('models/real_data_90_percent_features.joblib')
+        print("Real data model features loaded from alternative path!")
+    except Exception as e2:
+        print(f"Error loading model features from alternative path: {e2}")
+        # Try fallback to smaller model features
+        try:
+            model_features = joblib.load(os.path.join(MODELS_DIR, 'normalized_90_percent_features.joblib'))
+            print("Fallback to normalized 90% model features loaded successfully!")
+        except Exception as e3:
+            print(f"Error loading fallback features: {e3}")
+            model_features = None
+
+# Print current working directory and model status
+print(f"Current working directory: {os.getcwd()}")
+print(f"Models directory: {MODELS_DIR}")
+print(f"Model loaded: {model is not None}")
+print(f"Scaler loaded: {scaler is not None}")
+print(f"Features loaded: {model_features is not None}")
 
 def create_bmi_category(bmi):
     """Create BMI category based on BMI value"""
@@ -222,6 +265,18 @@ def create_risk_chart(risk_probability):
 def home():
     """Homepage"""
     return render_template('index.html')
+
+@app.route('/health')
+def health():
+    """Health check endpoint"""
+    return jsonify({
+        'status': 'healthy',
+        'model_loaded': model is not None,
+        'scaler_loaded': scaler is not None,
+        'features_loaded': model_features is not None,
+        'working_directory': os.getcwd(),
+        'models_directory': MODELS_DIR
+    })
 
 @app.route('/assessment')
 def assessment():
