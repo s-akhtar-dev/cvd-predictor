@@ -135,18 +135,6 @@ logs/
 *.bak
 *.backup
 
-# Model files (if they're large)
-*.joblib
-*.pkl
-*.pickle
-
-# Data files (if they're large)
-*.csv
-*.json
-*.xml
-*.xlsx
-*.xls
-
 # Charts and images (if they're generated)
 *.png
 *.jpg
