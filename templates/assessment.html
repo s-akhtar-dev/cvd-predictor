@@ -1,0 +1,1214 @@
+{% extends "base.html" %}
+
+{% block title %}Risk Assessment - Cardiovascular Risk Prediction{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h2 class="card-title mb-0">
+                    <i class="fas fa-clipboard-list me-2"></i>
+                    Cardiovascular Risk Assessment
+                </h2>
+            </div>
+            <div class="card-body p-4">
+                <!-- Simulation Buttons for Testing -->
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Testing & Demonstration:</strong> Use these simulation buttons to quickly load realistic patient data for testing different risk scenarios.
+                        </div>
+                        <div class="d-flex gap-2 flex-wrap">
+                            <button type="button" id="lowRiskSimBtn" class="btn btn-success">
+                                <i class="fas fa-user-check me-1"></i>Low Risk Patient
+                            </button>
+                            <button type="button" id="highRiskSimBtn" class="btn btn-danger">
+                                <i class="fas fa-user-times me-1"></i>High Risk Patient
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Clear All Button - Small and Unobtrusive -->
+                <div class="row mb-2">
+                    <div class="col-12 text-end">
+                        <button type="button" id="clearAllBtn" class="btn btn-sm btn-outline-secondary">
+                            <i class="fas fa-eraser me-1"></i>Clear Form
+                        </button>
+                    </div>
+                </div>
+
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Important:</strong> This assessment is for educational purposes only and should not replace professional medical advice. Please consult with your healthcare provider for medical decisions.
+                </div>
+
+                <form id="riskAssessmentForm">
+                    <!-- Personal Information -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h4 class="text-white mb-3">
+                                <i class="fas fa-user-circle me-2"></i>Personal Information
+                            </h4>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="age_years" class="form-label">
+                                <i class="fas fa-birthday-cake me-1"></i>Age (years) *
+                            </label>
+                            <input type="number" class="form-control" id="age_years" name="age_years" 
+                                   min="18" max="120" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="sex" class="form-label">
+                                <i class="fas fa-venus-mars me-1"></i>Gender *
+                            </label>
+                            <select class="form-select" id="sex" name="sex" required>
+                                <option value="">Select gender</option>
+                                <option value="0">Female</option>
+                                <option value="1">Male</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Physical Measurements -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h4 class="text-white mb-3">
+                                <i class="fas fa-ruler me-2"></i>Physical Measurements
+                            </h4>
+                        </div>
+                        
+                        <!-- Height Section -->
+                        <div class="col-md-6 mb-3">
+                            <label for="height_feet" class="form-label">
+                                <i class="fas fa-ruler-vertical me-1"></i>Height (feet) *
+                            </label>
+                            <input type="number" class="form-control" id="height_feet" name="height_feet" 
+                                   min="3" max="8" placeholder="0" value="0" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="height_inches" class="form-label">
+                                <i class="fas fa-ruler-vertical me-1"></i>Height (inches) *
+                            </label>
+                            <input type="number" class="form-control" id="height_inches" name="height_inches" 
+                                   min="0" max="11" placeholder="0" value="0" required>
+                        </div>
+                        
+                        <!-- Weight Section -->
+                        <div class="col-md-6 mb-3">
+                            <label for="weight_lbs" class="form-label">
+                                <i class="fas fa-weight-hanging me-1"></i>Weight (pounds) *
+                            </label>
+                            <input type="number" class="form-control" id="weight_lbs" name="weight_lbs" 
+                                   min="66" max="660" step="0.1" placeholder="0" value="0" required>
+                        </div>
+                        
+                        <!-- Metric Equivalents (Read-only) -->
+                        <div class="col-md-6 mb-3">
+                            <label for="height_cm" class="form-label">
+                                <i class="fas fa-ruler-vertical me-1"></i>Height (cm)
+                            </label>
+                            <input type="number" class="form-control" id="height_cm" name="height_cm" 
+                                   min="100" max="250" step="0.1" readonly>
+                            <small class="form-text text-muted">Calculated automatically</small>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="weight_kg" class="form-label">
+                                <i class="fas fa-weight-hanging me-1"></i>Weight (kg)
+                            </label>
+                            <input type="number" class="form-control" id="weight_kg" name="weight_kg" 
+                                   min="30" max="300" step="0.1" readonly>
+                            <small class="form-text text-muted">Calculated automatically</small>
+                        </div>
+                        
+                        <!-- BMI Display -->
+                        <div class="col-md-6 mb-3">
+                            <label for="bmi" class="form-label">
+                                <i class="fas fa-calculator me-1"></i>BMI (Body Mass Index)
+                            </label>
+                            <input type="number" class="form-control" id="bmi" name="bmi" 
+                                   min="10" max="60" step="0.1" readonly>
+                            <small class="form-text text-muted">Calculated automatically</small>
+                            <div id="bmiCategoryDisplay" class="mt-2 fw-bold"></div>
+                        </div>
+                        
+                        <!-- Info Note -->
+                        <div class="col-12">
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <strong>Note:</strong> Enter your height in feet/inches and weight in pounds. The metric equivalents and BMI will be calculated automatically.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Health Status -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h4 class="text-white mb-3">
+                                <i class="fas fa-heartbeat me-2"></i>Health Status
+                            </h4>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="smoking" class="form-label">
+                                <i class="fas fa-smoking me-1"></i>Smoking Status *
+                            </label>
+                            <select class="form-select" id="smoking" name="smoking" required>
+                                <option value="">Select smoking status</option>
+                                <option value="0">No</option>
+                                <option value="1">Yes</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="physical_activity" class="form-label">
+                                <i class="fas fa-running me-1"></i>Physical Activity *
+                            </label>
+                            <select class="form-select" id="physical_activity" name="physical_activity" required>
+                                <option value="">Select activity level</option>
+                                <option value="0">No</option>
+                                <option value="1">Yes</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="cholesterol" class="form-label">
+                                <i class="fas fa-tint me-1"></i>Total Cholesterol (mg/dL) *
+                            </label>
+                            <input type="number" class="form-control" id="cholesterol" name="cholesterol" 
+                                   min="100" max="600" required>
+                            <small class="form-text text-muted">Normal range: 100-600 mg/dL</small>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="general_health" class="form-label">
+                                <i class="fas fa-heart me-1"></i>General Health *
+                            </label>
+                            <select class="form-select" id="general_health" name="general_health" required>
+                                <option value="">Select health status</option>
+                                <option value="0">Excellent</option>
+                                <option value="1">Very Good</option>
+                                <option value="2">Normal</option>
+                                <option value="3">Poor</option>
+                                <option value="4">Very Poor</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Blood Pressure & Glucose -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h4 class="text-white mb-3">
+                                <i class="fas fa-heartbeat me-2"></i>Blood Pressure & Glucose
+                            </h4>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="systolic_bp" class="form-label">
+                                <i class="fas fa-tachometer-alt me-1"></i>Systolic Blood Pressure (mmHg) *
+                            </label>
+                            <input type="number" class="form-control" id="systolic_bp" name="systolic_bp" 
+                                   min="70" max="250" required>
+                            <small class="form-text text-muted">Normal range: 90-140 mmHg</small>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="diastolic_bp" class="form-label">
+                                <i class="fas fa-tachometer-alt me-1"></i>Diastolic Blood Pressure (mmHg) *
+                            </label>
+                            <input type="number" class="form-control" id="diastolic_bp" name="diastolic_bp" 
+                                   min="40" max="150" required>
+                            <small class="form-text text-muted">Normal range: 60-90 mmHg</small>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="glucose" class="form-label">
+                                <i class="fas fa-flask me-1"></i>Glucose Level (mg/dL) *
+                            </label>
+                            <input type="number" class="form-control" id="glucose" name="glucose" 
+                                   min="50" max="500" required>
+                            <small class="form-text text-muted">Normal range: 70-140 mg/dL</small>
+                        </div>
+                    </div>
+
+                    <!-- Additional Health Factors -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h4 class="text-white mb-3">
+                                <i class="fas fa-plus-circle me-2"></i>Additional Health Factors
+                            </h4>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="alcohol_consumption" class="form-label">
+                                <i class="fas fa-wine-glass me-1"></i>Alcohol Consumption *
+                            </label>
+                            <select class="form-select" id="alcohol_consumption" name="alcohol_consumption" required>
+                                <option value="">Select alcohol consumption</option>
+                                <option value="0">No alcohol consumption</option>
+                                <option value="1">Some alcohol consumption</option>
+                            </select>
+                            <small class="form-text text-muted">Any alcohol consumption in the past year</small>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="diabetes" class="form-label">
+                                <i class="fas fa-pills me-1"></i>Diabetes Status *
+                            </label>
+                            <select class="form-select" id="diabetes" name="diabetes" required>
+                                <option value="">Select diabetes status</option>
+                                <option value="0">No diabetes</option>
+                                <option value="1">Has diabetes</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Hidden fields for model compatibility -->
+                    <input type="hidden" id="age_category" name="age_category" value="3">
+                    
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-primary btn-lg" id="submitBtn">
+                            <i class="fas fa-calculator me-2"></i>Calculate Risk
+                        </button>
+                        <button type="reset" class="btn btn-outline-secondary btn-lg ms-2">
+                            <i class="fas fa-redo me-2"></i>Reset Form
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Loading Spinner -->
+                <div id="loadingSpinner" class="text-center mt-4" style="display: none;">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2">Analyzing your data...</p>
+                </div>
+
+                <!-- Inline Results Display -->
+                <div id="inlineResults" class="mt-5" style="display: none;">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="text-white mb-0">
+                                <i class="fas fa-heartbeat me-2"></i>Your Risk Assessment Results
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="row align-items-center">
+                                <div class="col-lg-6 mb-4 mb-lg-0">
+                                    <div class="risk-display-card text-center">
+                                        <div class="risk-icon-container mb-3">
+                                            <i class="fas fa-heartbeat risk-icon"></i>
+                                        </div>
+                                        <h3 class="text-white mb-3">Your Risk Assessment</h3>
+                                        <div id="inlineRiskDisplay" class="risk-display-modern">
+                                            <div id="inlineRiskCategory" class="risk-category mb-3">Risk Level</div>
+                                            <div class="risk-circle-container">
+                                                <div class="risk-circle">
+                                                    <div class="risk-circle-inner">
+                                                        <span id="inlineRiskPercentage" class="risk-percentage">0%</span>
+                                                        <small class="risk-label">Risk</small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="progress-bar-modern mt-3">
+                                                <div id="inlineRiskProgressBar" class="progress-fill" style="width: 0%"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-6">
+                                    <div class="text-start">
+                                        <h4 class="text-white mb-3 fw-semibold">
+                                            <i class="fas fa-clipboard-list me-2 text-primary"></i>Quick Summary
+                                        </h4>
+                                        <div id="inlineKeyFactors" class="mb-4">
+                                            <!-- Key factors will be populated here -->
+                                        </div>
+                                        <div class="scroll-hint">
+                                            <small>
+                                                <i class="fas fa-chevron-down"></i> Scroll to see all factors
+                                            </small>
+                                        </div>
+                                        <div class="d-grid gap-2">
+                                            <button onclick="viewDetailedResults()" class="btn btn-primary btn-lg">
+                                                <i class="fas fa-chart-bar me-2"></i>View Detailed Analysis
+                                            </button>
+                                            <button onclick="recalculateRisk()" class="btn btn-success btn-lg">
+                                                <i class="fas fa-calculator me-2"></i>Recalculate Risk
+                                            </button>
+                                            <button onclick="newAssessment()" class="btn btn-outline-primary btn-lg">
+                                                <i class="fas fa-redo me-2"></i>New Assessment
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('riskAssessmentForm');
+    const heightFeetInput = document.getElementById('height_feet');
+    const heightInchesInput = document.getElementById('height_inches');
+    const heightCmInput = document.getElementById('height_cm');
+    const weightLbsInput = document.getElementById('weight_lbs');
+    const weightKgInput = document.getElementById('weight_kg');
+    const bmiInput = document.getElementById('bmi');
+    const ageInput = document.getElementById('age_years');
+    const ageCategoryInput = document.getElementById('age_category');
+
+    // Load saved form data if available
+    loadSavedFormData();
+
+    // Calculate BMI automatically
+    function calculateBMI() {
+        const heightCm = parseFloat(heightCmInput.value);
+        const weightKg = parseFloat(weightKgInput.value);
+        
+        if (heightCm && weightKg) {
+            const heightM = heightCm / 100;
+            const bmi = weightKg / (heightM * heightM);
+            bmiInput.value = bmi.toFixed(1);
+            
+            // Update BMI category display
+            let bmiCategory = '';
+            if (bmi < 18.5) bmiCategory = 'Underweight';
+            else if (bmi < 25) bmiCategory = 'Normal';
+            else if (bmi < 30) bmiCategory = 'Overweight';
+            else bmiCategory = 'Obese';
+            
+            // Show BMI category
+            const bmiCategoryDisplay = document.getElementById('bmiCategoryDisplay');
+            if (bmiCategoryDisplay) {
+                bmiCategoryDisplay.textContent = `BMI: ${bmi.toFixed(1)} (${bmiCategory})`;
+                bmiCategoryDisplay.className = bmi < 25 ? 'text-success' : bmi < 30 ? 'text-warning' : 'text-danger';
+            }
+        }
+    }
+
+    // Convert feet/inches to cm
+    function convertFeetInchesToCm() {
+        const feet = parseFloat(heightFeetInput.value) || 0;
+        const inches = parseFloat(heightInchesInput.value) || 0;
+        
+        if (feet > 0 || inches > 0) {
+            const totalInches = (feet * 12) + inches;
+            const cm = totalInches * 2.54;
+            heightCmInput.value = cm.toFixed(1);
+            calculateBMI();
+        }
+    }
+
+    // Convert cm to feet/inches (for display purposes)
+    function convertCmToFeetInches() {
+        const cm = parseFloat(heightCmInput.value);
+        if (cm) {
+            const totalInches = cm / 2.54;
+            const feet = Math.floor(totalInches / 12);
+            const inches = Math.round(totalInches % 12);
+            
+            heightFeetInput.value = feet;
+            heightInchesInput.value = inches;
+            calculateBMI();
+        }
+    }
+
+    // Convert pounds to kg
+    function convertLbsToKg() {
+        const lbs = parseFloat(weightLbsInput.value) || 0;
+        
+        if (lbs > 0) {
+            const kg = lbs / 2.20462;
+            weightKgInput.value = kg.toFixed(1);
+            calculateBMI();
+        }
+    }
+
+    // Convert kg to pounds (for display purposes)
+    function convertKgToLbs() {
+        const kg = parseFloat(weightKgInput.value);
+        if (kg) {
+            const lbs = kg * 2.20462;
+            weightLbsInput.value = lbs.toFixed(1);
+            calculateBMI();
+        }
+    }
+
+    // Set age category based on age
+    function setAgeCategory() {
+        const age = parseInt(ageInput.value);
+        if (age) {
+            let category = 0;
+            if (age >= 18 && age <= 24) category = 0;
+            else if (age >= 25 && age <= 29) category = 1;
+            else if (age >= 30 && age <= 34) category = 2;
+            else if (age >= 35 && age <= 39) category = 3;
+            else if (age >= 40 && age <= 44) category = 4;
+            else if (age >= 45 && age <= 49) category = 5;
+            else if (age >= 50 && age <= 54) category = 6;
+            else if (age >= 55 && age <= 59) category = 7;
+            else if (age >= 60 && age <= 64) category = 8;
+            else if (age >= 65 && age <= 69) category = 9;
+            else if (age >= 70 && age <= 74) category = 10;
+            else if (age >= 75 && age <= 79) category = 11;
+            else if (age >= 80) category = 12;
+            
+            ageCategoryInput.value = category;
+        }
+    }
+
+    // Primary event listeners for imperial units
+    heightFeetInput.addEventListener('input', convertFeetInchesToCm);
+    heightInchesInput.addEventListener('input', convertFeetInchesToCm);
+    weightLbsInput.addEventListener('input', convertLbsToKg);
+    
+    // Secondary event listeners for metric units (if user manually changes them)
+    heightCmInput.addEventListener('input', convertCmToFeetInches);
+    weightKgInput.addEventListener('input', convertKgToLbs);
+    
+    // Age event listener
+    ageInput.addEventListener('input', setAgeCategory);
+    
+    // Initialize form with default values
+    function initializeForm() {
+        // Set default age category
+        setAgeCategory();
+        
+        // Calculate initial metric equivalents and BMI
+        convertFeetInchesToCm();
+        convertLbsToKg();
+    }
+    
+    // Initialize the form when page loads
+    initializeForm();
+
+    // Save form data to localStorage
+    function saveFormData() {
+        const formData = {
+            age_years: ageInput.value,
+            height_feet: heightFeetInput.value,
+            height_inches: heightInchesInput.value,
+            weight_lbs: weightLbsInput.value,
+            smoking: document.getElementById('smoking').value,
+            physical_activity: document.getElementById('physical_activity').value,
+            cholesterol: document.getElementById('cholesterol').value,
+            general_health: document.getElementById('general_health').value,
+            systolic_bp: document.getElementById('systolic_bp').value,
+            diastolic_bp: document.getElementById('diastolic_bp').value,
+            glucose: document.getElementById('glucose').value,
+            alcohol_consumption: document.getElementById('alcohol_consumption').value,
+            diabetes: document.getElementById('diabetes').value
+        };
+        localStorage.setItem('cardiovascularFormData', JSON.stringify(formData));
+    }
+
+    // Load saved form data from localStorage
+    function loadSavedFormData() {
+        const savedData = localStorage.getItem('cardiovascularFormData');
+        if (savedData) {
+            try {
+                const data = JSON.parse(savedData);
+                if (data.age_years) ageInput.value = data.age_years;
+                if (data.height_feet) heightFeetInput.value = data.height_feet;
+                if (data.height_inches) heightInchesInput.value = data.height_inches;
+                if (data.weight_lbs) weightLbsInput.value = data.weight_lbs;
+                if (data.smoking) document.getElementById('smoking').value = data.smoking;
+                if (data.physical_activity) document.getElementById('physical_activity').value = data.physical_activity;
+                if (data.cholesterol) document.getElementById('cholesterol').value = data.cholesterol;
+                if (data.general_health) document.getElementById('general_health').value = data.general_health;
+                if (data.systolic_bp) document.getElementById('systolic_bp').value = data.systolic_bp;
+                if (data.diastolic_bp) document.getElementById('diastolic_bp').value = data.diastolic_bp;
+                if (data.glucose) document.getElementById('glucose').value = data.glucose;
+                if (data.alcohol_consumption) document.getElementById('alcohol_consumption').value = data.alcohol_consumption;
+                if (data.diabetes) document.getElementById('diabetes').value = data.diabetes;
+                
+                // Recalculate conversions and BMI
+                convertFeetInchesToCm();
+                convertLbsToKg();
+                setAgeCategory();
+            } catch (error) {
+                console.error('Error loading saved form data:', error);
+            }
+        }
+    }
+
+    // Save form data on any input change
+    form.addEventListener('input', function(e) {
+        saveFormData();
+        
+        // If results are currently displayed, hide them when user changes any field
+        const inlineResults = document.getElementById('inlineResults');
+        if (inlineResults && inlineResults.style.display !== 'none') {
+            inlineResults.style.display = 'none';
+            
+            // Show a subtle message that results are outdated
+            showResultsOutdatedMessage();
+        }
+    });
+
+    // Form submission
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const submitBtn = document.getElementById('submitBtn');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        
+        // Validate required fields
+        const requiredFields = ['age_years', 'sex', 'height_feet', 'height_inches', 'weight_lbs', 
+                               'smoking', 'physical_activity', 'cholesterol', 'general_health',
+                               'systolic_bp', 'diastolic_bp', 'glucose', 'alcohol_consumption', 'diabetes'];
+        
+        let missingFields = [];
+        requiredFields.forEach(field => {
+            const element = document.getElementById(field);
+            if (!element.value.trim()) {
+                missingFields.push(field.replace('_', ' '));
+            }
+        });
+        
+        if (missingFields.length > 0) {
+            alert('Please fill in all required fields: ' + missingFields.join(', '));
+            return;
+        }
+        
+        // Validate BMI calculation
+        const bmiElement = document.getElementById('bmi');
+        if (!bmiElement.value || parseFloat(bmiElement.value) <= 0) {
+            alert('Please ensure height and weight are entered correctly to calculate BMI.');
+            return;
+        }
+        
+        // Show loading spinner
+        submitBtn.disabled = true;
+        loadingSpinner.style.display = 'block';
+        
+        // Collect form data
+        const formData = new FormData(form);
+        const data = {};
+        formData.forEach((value, key) => {
+            data[key] = value;
+        });
+        
+        // Ensure BMI is included in the data
+        const bmiValue = document.getElementById('bmi').value;
+        if (bmiValue) {
+            data.bmi = bmiValue;
+        }
+        
+        // Validate blood pressure values after data is collected
+        const systolic = parseInt(data.systolic_bp);
+        const diastolic = parseInt(data.diastolic_bp);
+        if (systolic <= diastolic) {
+            alert('Systolic blood pressure must be higher than diastolic blood pressure.');
+            // Re-enable submit button and hide spinner
+            submitBtn.disabled = false;
+            loadingSpinner.style.display = 'none';
+            return;
+        }
+        
+        // Log the data being sent for debugging
+        console.log('Form data being sent:', data);
+        
+        try {
+            const response = await fetch('/predict', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            });
+            
+            const result = await response.json();
+            
+            if (response.ok) {
+                // Store results in sessionStorage as backup
+                const riskData = {
+                    risk_probability: result.risk_probability,
+                    risk_category: result.risk_category,
+                    user_data: data
+                };
+                sessionStorage.setItem('riskData', JSON.stringify(riskData));
+                
+                // Remove any outdated message
+                const outdatedMessage = document.querySelector('.results-outdated-message');
+                if (outdatedMessage) {
+                    outdatedMessage.remove();
+                }
+                
+                // Show inline results instead of redirecting
+                showInlineResults(riskData);
+            } else {
+                alert('Error: ' + result.error);
+            }
+        } catch (error) {
+            alert('Error: ' + error.message);
+        } finally {
+            // Hide loading spinner
+            submitBtn.disabled = false;
+            loadingSpinner.style.display = 'none';
+        }
+    });
+});
+
+// Global functions for the inline results
+function showInlineResults(riskData) {
+    const inlineResults = document.getElementById('inlineResults');
+    const inlineRiskCategory = document.getElementById('inlineRiskCategory');
+    const inlineRiskPercentage = document.getElementById('inlineRiskPercentage');
+    const inlineRiskProgressBar = document.getElementById('inlineRiskProgressBar');
+    const inlineKeyFactors = document.getElementById('inlineKeyFactors');
+    
+    // Update risk display
+    const percentage = Math.round(riskData.risk_probability * 100);
+    inlineRiskCategory.textContent = riskData.risk_category;
+    inlineRiskPercentage.textContent = percentage + '%';
+    inlineRiskProgressBar.style.width = percentage + '%';
+    
+    // Get the risk circle element
+    const riskCircle = document.querySelector('#inlineRiskDisplay .risk-circle');
+    
+    // Apply risk-specific styling
+    inlineRiskCategory.classList.remove('low-risk', 'moderate-risk', 'high-risk');
+    
+    if (riskData.risk_category === 'Low') {
+        inlineRiskCategory.classList.add('low-risk');
+        inlineRiskProgressBar.style.background = 'linear-gradient(90deg, var(--risk-low), #059669)';
+        
+        // Update risk circle colors for low risk
+        if (riskCircle) {
+            riskCircle.style.background = `conic-gradient(var(--risk-low) 0%, var(--risk-low) ${percentage}%, rgba(255, 255, 255, 0.1) ${percentage}% 100%)`;
+        }
+    } else if (riskData.risk_category === 'Moderate') {
+        inlineRiskCategory.classList.add('moderate-risk');
+        inlineRiskProgressBar.style.background = 'linear-gradient(90deg, var(--risk-moderate), #d97706)';
+        
+        // Update risk circle colors for moderate risk
+        if (riskCircle) {
+            riskCircle.style.background = `conic-gradient(var(--risk-moderate) 0%, var(--risk-moderate) ${percentage}%, rgba(255, 255, 255, 0.1) ${percentage}% 100%)`;
+        }
+    } else {
+        inlineRiskCategory.classList.add('high-risk');
+        inlineRiskProgressBar.style.background = 'linear-gradient(90deg, var(--risk-high), #dc2626)';
+        
+        // Update risk circle colors for high risk
+        if (riskCircle) {
+            riskCircle.style.background = `conic-gradient(var(--risk-high) 0%, var(--risk-high) ${percentage}%, rgba(255, 255, 255, 0.1) ${percentage}% 100%)`;
+        }
+    }
+    
+    // Show key factors
+    displayInlineKeyFactors(riskData.user_data);
+    
+    // Show results
+    inlineResults.style.display = 'block';
+    
+    // Scroll to results
+    inlineResults.scrollIntoView({ behavior: 'smooth' });
+}
+
+function displayInlineKeyFactors(userData) {
+    const inlineKeyFactors = document.getElementById('inlineKeyFactors');
+    const factors = [];
+    
+    // Age analysis
+    if (userData.age_years) {
+        const age = parseInt(userData.age_years);
+        if (age >= 65) {
+            factors.push(`Age: ${age} years (High Risk)`);
+        } else if (age >= 45) {
+            factors.push(`Age: ${age} years (Moderate Risk)`);
+        } else {
+            factors.push(`Age: ${age} years (Low Risk)`);
+        }
+    }
+    
+    // BMI analysis
+    if (userData.bmi) {
+        const bmi = parseFloat(userData.bmi);
+        if (bmi >= 30) {
+            factors.push(`BMI: ${bmi.toFixed(1)} (High Risk - Obese)`);
+        } else if (bmi >= 25) {
+            factors.push(`BMI: ${bmi.toFixed(1)} (Moderate Risk - Overweight)`);
+        } else if (bmi >= 18.5) {
+            factors.push(`BMI: ${bmi.toFixed(1)} (Low Risk - Normal)`);
+        } else {
+            factors.push(`BMI: ${bmi.toFixed(1)} (Moderate Risk - Underweight)`);
+        }
+    }
+    
+    // Gender analysis
+    if (userData.sex === '1') {
+        factors.push('Gender: Male (Moderate Risk)');
+    } else {
+        factors.push('Gender: Female (Lower Risk)');
+    }
+    
+    // Smoking analysis
+    if (userData.smoking === '1') {
+        factors.push('Smoking: Yes (High Risk)');
+    } else {
+        factors.push('Smoking: No (Low Risk)');
+    }
+    
+    // Physical activity
+    if (userData.physical_activity === '0') {
+        factors.push('Physical Activity: Low (High Risk)');
+    } else {
+        factors.push('Physical Activity: High (Low Risk)');
+    }
+    
+    // Diabetes analysis
+    if (userData.diabetes === '1') {
+        factors.push('Diabetes: Yes (High Risk)');
+    } else {
+        factors.push('Diabetes: No (Low Risk)');
+    }
+    
+    // Blood pressure analysis
+    if (userData.systolic_bp && userData.diastolic_bp) {
+        const systolic = parseInt(userData.systolic_bp);
+        const diastolic = parseInt(userData.diastolic_bp);
+        
+        if (systolic >= 140 || diastolic >= 90) {
+            factors.push(`Blood Pressure: ${systolic}/${diastolic} mmHg (High Risk - Hypertension)`);
+        } else if (systolic >= 130 || diastolic >= 80) {
+            factors.push(`Blood Pressure: ${systolic}/${diastolic} mmHg (Moderate Risk - Elevated)`);
+        } else {
+            factors.push(`Blood Pressure: ${systolic}/${diastolic} mmHg (Low Risk - Normal)`);
+        }
+    }
+    
+    // Cholesterol analysis
+    if (userData.cholesterol) {
+        const cholesterol = parseInt(userData.cholesterol);
+        if (cholesterol >= 240) {
+            factors.push(`Cholesterol: ${cholesterol} mg/dL (High Risk)`);
+        } else if (cholesterol >= 200) {
+            factors.push(`Cholesterol: ${cholesterol} mg/dL (Moderate Risk)`);
+        } else {
+            factors.push(`Cholesterol: ${cholesterol} mg/dL (Low Risk)`);
+        }
+    }
+    
+    // Glucose analysis
+    if (userData.glucose) {
+        const glucose = parseInt(userData.glucose);
+        if (glucose >= 126) {
+            factors.push(`Glucose: ${glucose} mg/dL (High Risk - Diabetes Range)`);
+        } else if (glucose >= 100) {
+            factors.push(`Glucose: ${glucose} mg/dL (Moderate Risk - Prediabetes)`);
+        } else {
+            factors.push(`Glucose: ${glucose} mg/dL (Low Risk - Normal)`);
+        }
+    }
+    
+    // Alcohol consumption
+    if (userData.alcohol_consumption === '1') {
+        factors.push('Alcohol: Some consumption (Moderate Risk)');
+    } else {
+        factors.push('Alcohol: No consumption (Low Risk)');
+    }
+    
+    // Display factors with clean, polished styling
+    inlineKeyFactors.innerHTML = factors.map(factor => 
+        `<div class="quick-summary-item">
+            <i class="fas fa-arrow-right text-primary me-2"></i>
+            <span class="text-white">${factor}</span>
+        </div>`
+    ).join('');
+}
+
+function viewDetailedResults() {
+    // Navigate to the detailed results page
+    window.location.href = '{{ url_for("results") }}';
+}
+
+function clearAllInputs() {
+    // Clear form and hide results
+    document.getElementById('riskAssessmentForm').reset();
+    document.getElementById('inlineResults').style.display = 'none';
+    
+    // Clear saved form data
+    localStorage.removeItem('cardiovascularFormData');
+    
+    // Reset BMI and other calculated fields
+    document.getElementById('height_cm').value = '';
+    document.getElementById('weight_kg').value = '';
+    document.getElementById('bmi').value = '';
+    document.getElementById('bmiCategoryDisplay').textContent = '';
+    
+    // Scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    
+    // Show success message
+    showClearSuccessMessage();
+}
+
+function showResultsOutdatedMessage() {
+    // Remove any existing outdated message
+    const existingMessage = document.querySelector('.results-outdated-message');
+    if (existingMessage) {
+        existingMessage.remove();
+    }
+    
+    // Create a temporary info message
+    const infoDiv = document.createElement('div');
+    infoDiv.className = 'alert alert-info alert-dismissible fade show mt-3 results-outdated-message';
+    infoDiv.innerHTML = `
+        <i class="fas fa-info-circle me-2"></i>
+        <strong>Results Updated:</strong> Please recalculate your risk assessment after making changes.
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    // Insert after the form
+    const form = document.getElementById('riskAssessmentForm');
+    if (form && form.parentNode) {
+        form.parentNode.insertBefore(infoDiv, form.nextSibling);
+        
+        // Auto-remove after 5 seconds
+        setTimeout(() => {
+            if (infoDiv.parentNode) {
+                infoDiv.remove();
+            }
+        }, 5000);
+    }
+}
+
+function showClearSuccessMessage() {
+    // Create a temporary success message
+    const successDiv = document.createElement('div');
+    successDiv.className = 'alert alert-success alert-dismissible fade show mt-3';
+    successDiv.innerHTML = `
+        <i class="fas fa-check-circle me-2"></i>
+        <strong>Form cleared successfully!</strong> All inputs have been reset.
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    console.log('Attempting to show clear success message...');
+    
+    // Try multiple selectors to find the right place to insert
+    let insertLocation = null;
+    
+    // First try: find the clear button row
+    const clearButtonRow = document.querySelector('.row.mb-2');
+    console.log('Clear button row found:', clearButtonRow);
+    
+    if (clearButtonRow && clearButtonRow.parentNode) {
+        insertLocation = clearButtonRow.parentNode;
+        insertLocation.insertBefore(successDiv, clearButtonRow.nextSibling);
+        console.log('Success message inserted after clear button row');
+    } else {
+        // Second try: find any row with mb-2 class
+        const anyRow = document.querySelector('.mb-2');
+        console.log('Any mb-2 row found:', anyRow);
+        
+        if (anyRow && anyRow.parentNode) {
+            insertLocation = anyRow.parentNode;
+            insertLocation.insertBefore(successDiv, anyRow.nextSibling);
+            console.log('Success message inserted after any mb-2 row');
+        } else {
+            // Third try: find the card body
+            const cardBody = document.querySelector('.card-body');
+            console.log('Card body found:', cardBody);
+            
+            if (cardBody) {
+                insertLocation = cardBody;
+                cardBody.insertBefore(successDiv, cardBody.firstChild);
+                console.log('Success message inserted at beginning of card body');
+            } else {
+                // Last resort: append to the form
+                const form = document.getElementById('riskAssessmentForm');
+                console.log('Form found:', form);
+                
+                if (form) {
+                    insertLocation = form.parentNode;
+                    insertLocation.insertBefore(successDiv, form);
+                    console.log('Success message inserted before form');
+                } else {
+                    console.log('No suitable location found for success message');
+                }
+            }
+        }
+    }
+    
+    // Auto-remove after 3 seconds (always run this)
+    setTimeout(() => {
+        if (successDiv.parentNode) {
+            successDiv.remove();
+            console.log('Success message auto-removed');
+        }
+    }, 3000);
+}
+
+function recalculateRisk() {
+    // Hide current results
+    document.getElementById('inlineResults').style.display = 'none';
+    
+    // Remove any outdated message
+    const outdatedMessage = document.querySelector('.results-outdated-message');
+    if (outdatedMessage) {
+        outdatedMessage.remove();
+    }
+    
+    // Scroll to form
+    document.getElementById('riskAssessmentForm').scrollIntoView({ behavior: 'smooth' });
+    
+    // Trigger form submission
+    document.getElementById('riskAssessmentForm').dispatchEvent(new Event('submit'));
+}
+
+function newAssessment() {
+    // Clear form and hide results
+    document.getElementById('riskAssessmentForm').reset();
+    document.getElementById('inlineResults').style.display = 'none';
+    
+    // Clear saved form data
+    localStorage.removeItem('cardiovascularFormData');
+    
+    // Reset BMI and other calculated fields
+    document.getElementById('height_cm').value = '';
+    document.getElementById('weight_kg').value = '';
+    document.getElementById('bmi').value = '';
+    document.getElementById('bmiCategoryDisplay').textContent = '';
+    
+    // Scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Add event listener for clear button
+document.addEventListener('DOMContentLoaded', function() {
+    const clearBtn = document.getElementById('clearAllBtn');
+    if (clearBtn) {
+        clearBtn.addEventListener('click', clearAllInputs);
+        console.log('Clear button event listener added successfully');
+    } else {
+        console.log('Clear button not found during DOMContentLoaded');
+    }
+});
+
+// Also try to add the event listener immediately if DOM is already loaded
+if (document.readyState === 'loading') {
+    // DOM is still loading, wait for DOMContentLoaded
+    document.addEventListener('DOMContentLoaded', function() {
+        const clearBtn = document.getElementById('clearAllBtn');
+        if (clearBtn) {
+            clearBtn.addEventListener('click', clearAllInputs);
+            console.log('Clear button event listener added on DOMContentLoaded');
+        }
+    });
+} else {
+    // DOM is already loaded, add event listener immediately
+    const clearBtn = document.getElementById('clearAllBtn');
+    if (clearBtn) {
+        clearBtn.addEventListener('click', clearAllInputs);
+        console.log('Clear button event listener added immediately');
+    }
+}
+
+// ===== SIMULATION FUNCTIONS =====
+function loadLowRiskSimulation() {
+    // Young healthy female - Low risk profile (yields ~11% risk)
+    const lowRiskData = {
+        age_years: 25, // Younger age
+        sex: '0', // Female
+        height_feet: 5,
+        height_inches: 6,
+        weight_lbs: 125, // Slightly lower weight
+        smoking: '0', // No smoking
+        physical_activity: '1', // Active
+        cholesterol: 160, // Lower cholesterol
+        general_health: '0', // Excellent
+        systolic_bp: 105, // Lower BP
+        diastolic_bp: 65,
+        glucose: 80, // Lower glucose
+        alcohol_consumption: '0', // No alcohol
+        diabetes: '0' // No diabetes
+    };
+    
+    loadSimulationData(lowRiskData, 'Low Risk');
+}
+
+
+
+function loadHighRiskSimulation() {
+    // Elderly male with multiple risk factors - High risk profile (should yield higher than 36%)
+    const highRiskData = {
+        age_years: 85, // Very elderly
+        sex: '1', // Male
+        height_feet: 5,
+        height_inches: 8,
+        weight_lbs: 250, // Very high weight for BMI 36+
+        smoking: '1', // Smoking
+        physical_activity: '0', // Low activity
+        cholesterol: 400, // Extremely high cholesterol
+        general_health: '4', // Very poor health
+        systolic_bp: 190, // Extremely high BP
+        diastolic_bp: 115,
+        glucose: 200, // Extremely high glucose
+        alcohol_consumption: '1', // Some alcohol
+        diabetes: '1' // Has diabetes
+    };
+    
+    loadSimulationData(highRiskData, 'High Risk');
+}
+
+function loadSimulationData(simulationData, riskType) {
+    // Clear any existing results
+    const inlineResults = document.getElementById('inlineResults');
+    if (inlineResults) {
+        inlineResults.style.display = 'none';
+    }
+    
+    // Remove any outdated messages
+    const outdatedMessage = document.querySelector('.results-outdated-message');
+    if (outdatedMessage) {
+        outdatedMessage.remove();
+    }
+    
+    // Load the simulation data into form fields
+    Object.keys(simulationData).forEach(key => {
+        const element = document.getElementById(key);
+        if (element) {
+            element.value = simulationData[key];
+        }
+    });
+    
+    // Trigger calculations for height, weight, and BMI using correct field IDs
+    const heightFeetInput = document.getElementById('height_feet');
+    const heightInchesInput = document.getElementById('height_inches');
+    const heightCmInput = document.getElementById('height_cm');
+    const weightLbsInput = document.getElementById('weight_lbs');
+    const weightKgInput = document.getElementById('weight_kg');
+    const ageInput = document.getElementById('age_years');
+    const ageCategoryInput = document.getElementById('age_category');
+    
+    // Calculate height in cm
+    if (heightFeetInput && heightInchesInput && heightCmInput) {
+        const feet = parseFloat(heightFeetInput.value) || 0;
+        const inches = parseFloat(heightInchesInput.value) || 0;
+        if (feet > 0 || inches > 0) {
+            const totalInches = (feet * 12) + inches;
+            const cm = totalInches * 2.54;
+            heightCmInput.value = cm.toFixed(1);
+        }
+    }
+    
+    // Calculate weight in kg
+    if (weightLbsInput && weightKgInput) {
+        const lbs = parseFloat(weightLbsInput.value) || 0;
+        if (lbs > 0) {
+            const kg = lbs / 2.20462;
+            weightKgInput.value = kg.toFixed(1);
+        }
+    }
+    
+    // Calculate BMI
+    if (heightCmInput && weightKgInput) {
+        const heightCm = parseFloat(heightCmInput.value);
+        const weightKg = parseFloat(weightKgInput.value);
+        if (heightCm > 0 && weightKg > 0) {
+            const heightM = heightCm / 100;
+            const bmi = weightKg / (heightM * heightM);
+            const bmiInput = document.getElementById('bmi');
+            if (bmiInput) {
+                bmiInput.value = bmi.toFixed(1);
+            }
+        }
+    }
+    
+    // Set age category
+    if (ageInput && ageCategoryInput) {
+        const age = parseInt(ageInput.value);
+        if (age) {
+            let category = 0;
+            if (age >= 18 && age <= 24) category = 0;
+            else if (age >= 25 && age <= 29) category = 1;
+            else if (age >= 30 && age <= 34) category = 2;
+            else if (age >= 35 && age <= 39) category = 3;
+            else if (age >= 40 && age <= 44) category = 4;
+            else if (age >= 45 && age <= 49) category = 5;
+            else if (age >= 50 && age <= 54) category = 6;
+            else if (age >= 55 && age <= 59) category = 7;
+            else if (age >= 60 && age <= 64) category = 8;
+            else if (age >= 65 && age <= 69) category = 9;
+            else if (age >= 70 && age <= 74) category = 10;
+            else if (age >= 75 && age <= 79) category = 11;
+            else if (age >= 80) category = 12;
+            
+            ageCategoryInput.value = category;
+        }
+    }
+    
+    // Save the simulation data to localStorage directly
+    const formData = {
+        age_years: document.getElementById('age_years').value,
+        sex: document.getElementById('sex').value,
+        height_feet: document.getElementById('height_feet').value,
+        height_inches: document.getElementById('height_inches').value,
+        weight_lbs: document.getElementById('weight_lbs').value,
+        smoking: document.getElementById('smoking').value,
+        physical_activity: document.getElementById('physical_activity').value,
+        cholesterol: document.getElementById('cholesterol').value,
+        general_health: document.getElementById('general_health').value,
+        systolic_bp: document.getElementById('systolic_bp').value,
+        diastolic_bp: document.getElementById('diastolic_bp').value,
+        glucose: document.getElementById('glucose').value,
+        alcohol_consumption: document.getElementById('alcohol_consumption').value,
+        diabetes: document.getElementById('diabetes').value
+    };
+    
+    localStorage.setItem('riskAssessmentFormData', JSON.stringify(formData));
+    
+    // Show success message
+    showSimulationLoadedMessage(riskType);
+    
+    // Scroll to form
+    document.getElementById('riskAssessmentForm').scrollIntoView({ behavior: 'smooth' });
+}
+
+function showSimulationLoadedMessage(riskType) {
+    // Remove any existing simulation message
+    const existingMessage = document.querySelector('.simulation-loaded-message');
+    if (existingMessage) {
+        existingMessage.remove();
+    }
+    
+    // Create success message
+    const successDiv = document.createElement('div');
+    successDiv.className = 'alert alert-success alert-dismissible fade show mt-3 simulation-loaded-message';
+    successDiv.innerHTML = `
+        <i class="fas fa-check-circle me-2"></i>
+        <strong>${riskType} Simulation Loaded!</strong> Patient data has been loaded. Click "Calculate Risk" to see the results.
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    // Insert after the simulation buttons
+    const simulationRow = document.querySelector('.row.mb-3');
+    if (simulationRow && simulationRow.parentNode) {
+        simulationRow.parentNode.insertBefore(successDiv, simulationRow.nextSibling);
+        
+        // Auto-remove after 5 seconds
+        setTimeout(() => {
+            if (successDiv.parentNode) {
+                successDiv.remove();
+            }
+        }, 5000);
+    }
+}
+
+// Add simulation button event listeners after all functions are defined
+document.addEventListener('DOMContentLoaded', function() {
+    const lowRiskBtn = document.getElementById('lowRiskSimBtn');
+    const highRiskBtn = document.getElementById('highRiskSimBtn');
+    
+    if (lowRiskBtn) {
+        lowRiskBtn.addEventListener('click', loadLowRiskSimulation);
+    }
+    if (highRiskBtn) {
+        highRiskBtn.addEventListener('click', loadHighRiskSimulation);
+    }
+});
+</script>
+{% endblock %}

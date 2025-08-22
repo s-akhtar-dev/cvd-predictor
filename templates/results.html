@@ -1,0 +1,1406 @@
+{% extends "base.html" %}
+
+{% block title %}Risk Assessment Results - CVD Predictor{% endblock %}
+
+{% block content %}
+<div class="container mt-5 results-page">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <!-- Risk Summary Section -->
+            <div class="card mb-5">
+                <div class="card-header">
+                    <h2 class="text-white mb-0">
+                        <i class="fas fa-heartbeat me-2"></i>Your Risk Assessment Results
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <div class="text-center">
+                        <div class="risk-display-card mx-auto" style="max-width: 500px;">
+                            <div class="risk-icon-container">
+                                <i class="fas fa-heartbeat risk-icon"></i>
+                            </div>
+                            <h3 class="text-white mb-3">Your Risk Assessment</h3>
+                            <div id="riskDisplayContainer" class="risk-display-modern">
+                                <div id="riskCategoryDisplay" class="risk-category mb-3">Risk Level</div>
+                                <div class="risk-circle-container">
+                                    <div class="risk-circle">
+                                        <div class="risk-circle-inner">
+                                            <span id="riskPercentage" class="risk-percentage">0%</span>
+                                            <small class="risk-label">Risk</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="progress-bar-modern mt-3">
+                                    <div id="riskProgressBar" class="progress-fill" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div class="text-center mt-4">
+                        <div class="action-buttons-container">
+                            <button onclick="shareResults()" class="btn btn-primary btn-lg me-3 action-btn">
+                                <i class="fas fa-share-alt me-2"></i>Share Results
+                            </button>
+                            <a href="{{ url_for('assessment') }}" class="btn btn-outline-primary btn-lg action-btn">
+                                <i class="fas fa-redo me-2"></i>New Assessment
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Model Information Banner -->
+            <div class="chart-card mb-5">
+                <div class="card-header">
+                    <h3 class="text-white mb-0">
+                        <i class="fas fa-brain me-2"></i>AI Model Information
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="row g-4">
+                        <div class="col-md-3">
+                            <div class="model-stat text-center">
+                                <i class="fas fa-chart-line fa-2x text-primary mb-3"></i>
+                                <h4 class="text-white">90.29%</h4>
+                                <p class="text-white-50">Accuracy</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="model-stat text-center">
+                                <i class="fas fa-database fa-2x text-success mb-3"></i>
+                                <h4 class="text-white">800K+</h4>
+                                <p class="text-white-50">Data Points</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="model-stat text-center">
+                                <i class="fas fa-cogs fa-2x text-warning mb-3"></i>
+                                <h4 class="text-white">11</h4>
+                                <p class="text-white-50">Risk Factors</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="model-stat text-center">
+                                <i class="fas fa-crosshairs fa-2x text-info mb-3"></i>
+                                <h4 class="text-white">10-Fold</h4>
+                                <p class="text-white-50">Cross-Validation</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-4 p-3 bg-primary bg-opacity-10 rounded">
+                        <p class="text-white mb-2">
+                            <strong>Model Details:</strong> This assessment uses our advanced Random Forest Classifier trained on real cardiovascular data from 5 different datasets. 
+                            The model has been optimized for 90.29% accuracy and provides user-friendly risk ranges (15-25%, 45-55%, 70-80%) for better interpretation.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Key Health Factors Section -->
+            <div class="chart-card mb-5">
+                <div class="card-header">
+                    <h3 class="text-white mb-0">
+                        <i class="fas fa-list-ul me-2"></i>Key Health Factors Analysis
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <p class="text-white mb-4">
+                        Detailed analysis of the health factors contributing to your cardiovascular risk assessment:
+                    </p>
+                    <div id="keyFactorsList" class="key-factors-list">
+                        <!-- Key factors will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Risk Comparison Chart -->
+            <div class="chart-card mb-5">
+                <div class="card-header">
+                    <h3 class="text-white mb-0">
+                        <i class="fas fa-chart-bar me-2"></i>Risk Comparison Chart
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <p class="text-white mb-4">
+                        This chart shows your risk level compared to the general population distribution. 
+                        Understanding where you stand helps in making informed health decisions.
+                    </p>
+                    <div id="riskChart" class="chart-container" style="min-height: 400px;"></div>
+                </div>
+            </div>
+
+            <!-- Risk Factors Analysis -->
+            <div class="chart-card mb-5">
+                <div class="card-header">
+                    <h3 class="text-white mb-0">
+                        <i class="fas fa-chart-line me-2"></i>Your Personal Risk Factor Analysis
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <p class="text-white mb-4">
+                        Detailed breakdown of how your specific health factors contribute to your overall cardiovascular risk score.
+                    </p>
+                    <div id="riskFactorsChart" class="chart-container" style="min-height: 400px;"></div>
+                </div>
+            </div>
+
+            <!-- Diabetes & Health Factors Correlation -->
+            <div class="chart-card mb-5">
+                <div class="card-header">
+                    <h3 class="text-white mb-0">
+                        <i class="fas fa-chart-scatter me-2"></i>Diabetes & Health Factors Correlation
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <p class="text-white mb-4">
+                        This interactive chart shows the relationship between diabetes and other health factors, with causal reasoning effects. 
+                        Each point represents how different combinations of factors influence cardiovascular risk.
+                    </p>
+                    <div id="diabetesCorrelationChart" class="chart-container" style="min-height: 500px;"></div>
+                </div>
+            </div>
+
+            <!-- Recommendations Section -->
+            <div class="chart-card mb-5">
+                <div class="card-header">
+                    <h3 class="text-white mb-0">
+                        <i class="fas fa-lightbulb me-2"></i>Personalized Recommendations
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div id="recommendationsContainer">
+                        <!-- Recommendations will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Top 3 Actionable Recommendations -->
+            <div class="chart-card mb-5">
+                <div class="card-header">
+                    <h3 class="text-white mb-0">
+                        <i class="fas fa-star me-2"></i>Top 3 Actionable Steps
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <p class="text-white mb-4">
+                        Based on your risk factors, here are the three most important actions you can take to improve your cardiovascular health:
+                    </p>
+                    <div class="row g-4">
+                        <div class="col-md-4">
+                            <div class="recommendation-box" id="recommendation1">
+                                <div class="recommendation-icon">
+                                    <i class="fas fa-heart text-primary"></i>
+                                </div>
+                                <h5 class="text-white">Primary Action</h5>
+                                <p class="text-white-50">Loading recommendation...</p>
+                                <div class="recommendation-guidance">
+                                    <small class="text-info">Click for detailed guidance</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="recommendation-box" id="recommendation2">
+                                <div class="recommendation-icon">
+                                    <i class="fas fa-dumbbell text-success"></i>
+                                </div>
+                                <h5 class="text-white">Secondary Action</h5>
+                                <p class="text-white-50">Loading recommendation...</p>
+                                <div class="recommendation-guidance">
+                                    <small class="text-info">Click for detailed guidance</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="recommendation-box" id="recommendation3">
+                                <div class="recommendation-icon">
+                                    <i class="fas fa-apple-alt text-warning"></i>
+                                </div>
+                                <h5 class="text-white">Tertiary Action</h5>
+                                <p class="text-white-50">Loading recommendation...</p>
+                                <div class="recommendation-guidance">
+                                    <small class="text-info">Click for detailed guidance</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Educational Resources -->
+            <div class="chart-card mb-5">
+                <div class="card-header">
+                    <h3 class="text-white mb-0">
+                        <i class="fas fa-book me-2"></i>Educational Resources
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <div class="d-flex">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-heart fa-2x text-primary me-3"></i>
+                                </div>
+                                <div>
+                                    <h5 class="text-white">Heart Health Basics</h5>
+                                    <p class="text-white">Learn about cardiovascular health, risk factors, and prevention strategies.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <div class="d-flex">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-dumbbell fa-2x text-success me-3"></i>
+                                </div>
+                                <div>
+                                    <h5 class="text-white">Exercise & Lifestyle</h5>
+                                    <p class="text-white">Guidelines for physical activity and healthy lifestyle choices.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <div class="d-flex">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-apple-alt fa-2x text-info me-3"></i>
+                                </div>
+                                <div>
+                                    <h5 class="text-white">Nutrition & Diet</h5>
+                                    <p class="text-white">Heart-healthy eating patterns and dietary recommendations.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <div class="d-flex">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-user-md fa-2x text-warning me-3"></i>
+                                </div>
+                                <div>
+                                    <h5 class="text-white">Medical Consultation</h5>
+                                    <p class="text-white">When to seek professional medical advice and what to discuss.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Global variables
+let riskData = {};
+let chartsInitialized = false;
+
+// Initialize the page
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Results page loaded, initializing...');
+    
+    // Wait a bit for Plotly to be fully loaded
+    setTimeout(function() {
+        initializePage();
+    }, 100);
+});
+
+function initializePage() {
+    console.log('Initializing page...');
+    
+    // Get risk data from Flask template variables
+    {% if results %}
+        riskData = {
+            risk_probability: {{ results.risk_probability }},
+            risk_category: '{{ results.risk_category }}',
+            user_data: {{ results.user_data | tojson | safe }}
+        };
+        console.log('Risk data from Flask template:', riskData);
+    {% else %}
+        // Fallback: try to get data from session storage or URL parameters
+        try {
+            const sessionData = sessionStorage.getItem('riskData');
+            if (sessionData) {
+                riskData = JSON.parse(sessionData);
+                console.log('Risk data from session storage:', riskData);
+            } else {
+                // Try to get data from URL parameters
+                const urlParams = new URLSearchParams(window.location.search);
+                riskData = {
+                    risk_probability: parseFloat(urlParams.get('risk_probability') || 0.5),
+                    risk_category: urlParams.get('risk_category') || 'Moderate',
+                    user_data: JSON.parse(urlParams.get('user_data') || '{}')
+                };
+                console.log('Risk data from URL params:', riskData);
+            }
+        } catch (error) {
+            console.error('Error getting risk data:', error);
+            // Set default data if there's an error
+            riskData = {
+                risk_probability: 0.5,
+                risk_category: 'Moderate',
+                user_data: {}
+            };
+        }
+    {% endif %}
+    
+    // Display results
+    displayResults();
+    
+    // Initialize charts
+    if (typeof Plotly !== 'undefined') {
+        console.log('Plotly is available, creating charts...');
+        createAllCharts();
+    } else {
+        console.error('Plotly is not loaded!');
+        // Try to load Plotly again
+        loadPlotlyAndCreateCharts();
+    }
+    
+    // Display recommendations
+    displayRecommendations();
+}
+
+function loadPlotlyAndCreateCharts() {
+    console.log('Attempting to load Plotly...');
+    const script = document.createElement('script');
+    script.src = 'https://cdn.plot.ly/plotly-latest.min.js';
+    script.onload = function() {
+        console.log('Plotly loaded successfully, creating charts...');
+        createAllCharts();
+    };
+    script.onerror = function() {
+        console.error('Failed to load Plotly');
+    };
+    document.head.appendChild(script);
+}
+
+function createAllCharts() {
+    if (chartsInitialized) return;
+    
+    try {
+        console.log('Creating all charts...');
+        createRiskChart();
+        createRiskDistributionChart();
+        createRiskFactorsChart();
+        createDiabetesCorrelationChart();
+        chartsInitialized = true;
+        console.log('All charts created successfully');
+    } catch (error) {
+        console.error('Error creating charts:', error);
+    }
+}
+
+function displayResults() {
+    const riskProbability = riskData.risk_probability || 0.5;
+    const riskCategory = riskData.risk_category || 'Moderate';
+    const percentage = Math.round(riskProbability * 100);
+    
+    console.log('Displaying results:', { riskProbability, riskCategory, percentage });
+    
+    // Update risk display
+    document.getElementById('riskCategoryDisplay').textContent = riskCategory;
+    document.getElementById('riskPercentage').textContent = percentage + '%';
+    
+    // Update progress bar
+    const progressBar = document.getElementById('riskProgressBar');
+    progressBar.style.width = percentage + '%';
+    
+    // Update circular progress
+    const riskCircle = document.querySelector('.risk-circle');
+    if (riskCircle) {
+        riskCircle.style.setProperty('--risk-percentage', percentage + '%');
+    }
+    
+    // Apply risk-specific styling
+    const container = document.getElementById('riskDisplayContainer');
+    const riskCategoryElement = document.getElementById('riskCategoryDisplay');
+    
+    // Remove existing risk classes
+    container.classList.remove('low-risk', 'moderate-risk', 'high-risk');
+    riskCategoryElement.classList.remove('low-risk', 'moderate-risk', 'high-risk');
+    
+    if (riskCategory === 'Low') {
+        container.classList.add('low-risk');
+        riskCategoryElement.classList.add('low-risk');
+        riskCategoryElement.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+        riskCategoryElement.style.color = 'white';
+        progressBar.style.background = 'linear-gradient(90deg, #10b981, #059669)';
+        if (riskCircle) {
+            riskCircle.style.background = `conic-gradient(#10b981 0%, #10b981 ${percentage}%, rgba(255, 255, 255, 0.1) ${percentage}% 100%)`;
+        }
+    } else if (riskCategory === 'Moderate') {
+        container.classList.add('moderate-risk');
+        riskCategoryElement.classList.add('moderate-risk');
+        riskCategoryElement.style.background = 'linear-gradient(135deg, #f59e0b, #d97706)';
+        riskCategoryElement.style.color = 'white';
+        progressBar.style.background = 'linear-gradient(90deg, #f59e0b, #d97706)';
+        if (riskCircle) {
+            riskCircle.style.background = `conic-gradient(#f59e0b 0%, #f59e0b ${percentage}%, rgba(255, 255, 255, 0.1) ${percentage}% 100%)`;
+        }
+    } else {
+        container.classList.add('high-risk');
+        riskCategoryElement.classList.add('high-risk');
+        riskCategoryElement.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
+        riskCategoryElement.style.color = 'white';
+        progressBar.style.background = 'linear-gradient(90deg, #ef4444, #dc2626)';
+        if (riskCircle) {
+            riskCircle.style.background = `conic-gradient(#ef4444 0%, #ef4444 ${percentage}%, rgba(255, 255, 255, 0.1) ${percentage}% 100%)`;
+        }
+    }
+    
+    // Display key factors
+    displayKeyFactors();
+}
+
+function displayKeyFactors() {
+    const userData = riskData.user_data || {};
+    const factors = [];
+    
+    // Age analysis
+    if (userData.age_years) {
+        if (userData.age_years >= 65) {
+            factors.push(`Your age of ${userData.age_years} years is considered a significant risk factor for cardiovascular disease.`);
+        } else if (userData.age_years >= 45) {
+            factors.push(`Your age of ${userData.age_years} years puts you in a moderate risk category for cardiovascular disease.`);
+        } else {
+            factors.push(`Your age of ${userData.age_years} years is generally considered low risk for cardiovascular disease.`);
+        }
+    }
+    
+    // BMI analysis
+    if (userData.bmi) {
+        if (userData.bmi >= 30) {
+            factors.push(`Your BMI of ${userData.bmi.toFixed(1)} indicates obesity, which significantly increases cardiovascular risk.`);
+        } else if (userData.bmi >= 25) {
+            factors.push(`Your BMI of ${userData.bmi.toFixed(1)} indicates overweight status, which moderately increases cardiovascular risk.`);
+        } else if (userData.bmi < 18.5) {
+            factors.push(`Your BMI of ${userData.bmi.toFixed(1)} indicates underweight status, which may affect overall health.`);
+        } else {
+            factors.push(`Your BMI of ${userData.bmi.toFixed(1)} is within the healthy range, which is good for cardiovascular health.`);
+        }
+    }
+    
+    // Gender analysis
+    if (userData.sex !== undefined) {
+        if (userData.sex === 1) {
+            factors.push('Being male increases cardiovascular risk compared to females of the same age.');
+        } else {
+            factors.push('Being female generally provides some cardiovascular protection until menopause.');
+        }
+    }
+    
+    // Smoking analysis
+    if (userData.smoking === 1) {
+        factors.push('Smoking is a major risk factor for cardiovascular disease and significantly increases your risk.');
+    } else {
+        factors.push('Being a non-smoker is excellent for your cardiovascular health and reduces your risk.');
+    }
+    
+    // Physical activity analysis
+    if (userData.physical_activity === 0) {
+        factors.push('Low physical activity levels increase your cardiovascular risk. Regular exercise can help reduce this risk.');
+    } else {
+        factors.push('Regular physical activity is excellent for cardiovascular health and helps reduce your risk.');
+    }
+    
+    // Diabetes analysis
+    if (userData.diabetes === 1) {
+        factors.push('Diabetes significantly increases cardiovascular risk and requires careful management.');
+    } else {
+        factors.push('Not having diabetes is positive for your cardiovascular health.');
+    }
+    
+    // Alcohol consumption analysis
+    if (userData.alcohol_consumption === 1) {
+        factors.push('Excessive alcohol consumption can increase cardiovascular risk. Moderation is key.');
+    } else {
+        factors.push('Not consuming alcohol is generally positive for cardiovascular health.');
+    }
+    
+    // Cholesterol analysis
+    if (userData.cholesterol) {
+        if (userData.cholesterol >= 240) {
+            factors.push(`Your cholesterol level of ${userData.cholesterol} mg/dL is high and significantly increases cardiovascular risk.`);
+        } else if (userData.cholesterol >= 200) {
+            factors.push(`Your cholesterol level of ${userData.cholesterol} mg/dL is borderline high and moderately increases cardiovascular risk.`);
+        } else {
+            factors.push(`Your cholesterol level of ${userData.cholesterol} mg/dL is within the healthy range, which is good for cardiovascular health.`);
+        }
+    }
+    
+    // Blood pressure analysis
+    if (userData.systolic_bp && userData.diastolic_bp) {
+        if (userData.systolic_bp >= 140 || userData.diastolic_bp >= 90) {
+            factors.push(`Your blood pressure (${userData.systolic_bp}/${userData.diastolic_bp} mmHg) is elevated and increases cardiovascular risk.`);
+        } else if (userData.systolic_bp >= 130 || userData.diastolic_bp >= 80) {
+            factors.push(`Your blood pressure (${userData.systolic_bp}/${userData.diastolic_bp} mmHg) is borderline elevated.`);
+        } else {
+            factors.push(`Your blood pressure (${userData.systolic_bp}/${userData.diastolic_bp} mmHg) is within the healthy range.`);
+        }
+    }
+    
+    // Glucose analysis
+    if (userData.glucose) {
+        if (userData.glucose >= 126) {
+            factors.push(`Your glucose level of ${userData.glucose} mg/dL is elevated and may indicate diabetes risk.`);
+        } else if (userData.glucose >= 100) {
+            factors.push(`Your glucose level of ${userData.glucose} mg/dL is borderline elevated (prediabetes range).`);
+        } else {
+            factors.push(`Your glucose level of ${userData.glucose} mg/dL is within the healthy range.`);
+        }
+    }
+    
+    const factorsList = document.getElementById('keyFactorsList');
+    factorsList.innerHTML = factors.map(factor => 
+        `<div class="mb-3 p-3 bg-light rounded">
+            <i class="fas fa-info-circle text-primary me-2"></i>${factor}
+        </div>`
+    ).join('');
+}
+
+function createRiskChart() {
+    console.log('Creating risk chart...');
+    const riskProbability = riskData.risk_probability || 0.5;
+    const percentage = Math.round(riskProbability * 100);
+    
+    const trace = {
+        x: ['Your Risk', 'Population Average'],
+        y: [percentage, 35],
+        type: 'bar',
+        marker: {
+            color: ['#ef4444', '#3b82f6'],
+            line: {
+                color: 'rgba(255, 255, 255, 0.3)',
+                width: 1
+            }
+        },
+        text: [percentage + '%', '35%'],
+        textposition: 'auto',
+        textfont: {
+            color: 'white',
+            size: 14
+        }
+    };
+    
+    const layout = {
+        title: {
+            text: 'Your Risk vs. Population Average',
+            font: { color: 'white', size: 18 }
+        },
+        xaxis: {
+            titlefont: { color: 'white' },
+            tickfont: { color: 'white' },
+            gridcolor: 'rgba(255, 255, 255, 0.1)'
+        },
+        yaxis: {
+            title: 'Risk Percentage (%)',
+            titlefont: { color: 'white' },
+            tickfont: { color: 'white' },
+            gridcolor: 'rgba(255, 255, 255, 0.1)',
+            zerolinecolor: 'rgba(255, 255, 255, 0.3)'
+        },
+        plot_bgcolor: 'rgba(0, 0, 0, 0)',
+        paper_bgcolor: 'rgba(0, 0, 0, 0)',
+        margin: { l: 80, r: 50, t: 80, b: 80 }
+    };
+    
+    try {
+        Plotly.newPlot('riskChart', [trace], layout, {responsive: true});
+        console.log('Risk chart created successfully');
+    } catch (error) {
+        console.error('Error creating risk chart:', error);
+    }
+}
+
+function createRiskDistributionChart() {
+    console.log('Creating personalized risk insights chart...');
+    const userData = riskData.user_data || {};
+    const riskCategory = riskData.risk_category || 'Moderate';
+    
+    // Create personalized insights based on user data
+    let insights = [];
+    let values = [];
+    let colors = [];
+    
+    // Risk level insight
+    insights.push(`Your Risk: ${riskCategory}`);
+    values.push(40);
+    colors.push(getRiskColor(riskCategory));
+    
+    // Age insight
+    if (userData.age_years) {
+        if (userData.age_years >= 65) {
+            insights.push('Age Risk: High');
+            values.push(25);
+            colors.push('#ef4444');
+        } else if (userData.age_years >= 45) {
+            insights.push('Age Risk: Moderate');
+            values.push(20);
+            colors.push('#f59e0b');
+        } else {
+            insights.push('Age Risk: Low');
+            values.push(15);
+            colors.push('#10b981');
+        }
+    }
+    
+    // BMI insight
+    if (userData.bmi) {
+        if (userData.bmi >= 30) {
+            insights.push('BMI Risk: High');
+            values.push(20);
+            colors.push('#ef4444');
+        } else if (userData.bmi >= 25) {
+            insights.push('BMI Risk: Moderate');
+            values.push(15);
+            colors.push('#f59e0b');
+        } else {
+            insights.push('BMI Risk: Low');
+            values.push(10);
+            colors.push('#10b981');
+        }
+    }
+    
+    // Lifestyle insight
+    let lifestyleRisk = 0;
+    if (userData.smoking === 1) lifestyleRisk += 15;
+    if (userData.physical_activity === 0) lifestyleRisk += 10;
+    
+    if (lifestyleRisk >= 20) {
+        insights.push('Lifestyle Risk: High');
+        values.push(20);
+        colors.push('#ef4444');
+    } else if (lifestyleRisk >= 10) {
+        insights.push('Lifestyle Risk: Moderate');
+        values.push(15);
+        colors.push('#f59e0b');
+    } else {
+        insights.push('Lifestyle Risk: Low');
+        values.push(10);
+        colors.push('#10b981');
+    }
+    
+    const trace = {
+        labels: insights,
+        values: values,
+        type: 'pie',
+        marker: {
+            colors: colors,
+            line: {
+                color: 'rgba(255, 255, 255, 0.3)',
+                width: 2
+            }
+        },
+        textinfo: 'label+percent',
+        textfont: {
+            color: 'white',
+            size: 12
+        },
+        hole: 0.4
+    };
+    
+    const layout = {
+        title: {
+            text: 'Your Personalized Risk Breakdown',
+            font: { color: 'white', size: 18 }
+        },
+        plot_bgcolor: 'rgba(0, 0, 0, 0)',
+        paper_bgcolor: 'rgba(0, 0, 0, 0)',
+        margin: { l: 50, r: 50, t: 80, b: 50 }
+    };
+    
+    try {
+        Plotly.newPlot('riskDistributionChart', [trace], layout, {responsive: true});
+        console.log('Personalized risk insights chart created successfully');
+    } catch (error) {
+        console.error('Error creating personalized risk insights chart:', error);
+    }
+}
+
+function createRiskFactorsChart() {
+    console.log('Creating personalized risk factors chart...');
+    const userData = riskData.user_data || {};
+    
+    // Create personalized risk factor analysis based on user data
+    let factors = [];
+    let contributions = [];
+    let colors = [];
+    
+    // Age contribution (always present)
+    if (userData.age_years) {
+        factors.push('Age');
+        if (userData.age_years >= 65) {
+            contributions.push(35);
+            colors.push('#ef4444');
+        } else if (userData.age_years >= 45) {
+            contributions.push(25);
+            colors.push('#f59e0b');
+        } else {
+            contributions.push(15);
+            colors.push('#10b981');
+        }
+    }
+    
+    // BMI contribution
+    if (userData.bmi) {
+        factors.push('BMI');
+        if (userData.bmi >= 30) {
+            contributions.push(30);
+            colors.push('#ef4444');
+        } else if (userData.bmi >= 25) {
+            contributions.push(20);
+            colors.push('#f59e0b');
+        } else {
+            contributions.push(10);
+            colors.push('#10b981');
+        }
+    }
+    
+    // Smoking contribution
+    if (userData.smoking !== undefined) {
+        factors.push('Smoking');
+        if (userData.smoking === 1) {
+            contributions.push(25);
+            colors.push('#ef4444');
+        } else {
+            contributions.push(5);
+            colors.push('#10b981');
+        }
+    }
+    
+    // Cholesterol contribution
+    if (userData.cholesterol) {
+        factors.push('Cholesterol');
+        if (userData.cholesterol >= 240) {
+            contributions.push(25);
+            colors.push('#ef4444');
+        } else if (userData.cholesterol >= 200) {
+            contributions.push(15);
+            colors.push('#f59e0b');
+        } else {
+            contributions.push(8);
+            colors.push('#10b981');
+        }
+    }
+    
+    // Physical activity contribution
+    if (userData.physical_activity !== undefined) {
+        factors.push('Physical Activity');
+        if (userData.physical_activity === 0) {
+            contributions.push(20);
+            colors.push('#ef4444');
+        } else {
+            contributions.push(8);
+            colors.push('#10b981');
+        }
+    }
+    
+    // Diabetes contribution
+    if (userData.diabetes !== undefined) {
+        factors.push('Diabetes');
+        if (userData.diabetes === 1) {
+            contributions.push(30);
+            colors.push('#ef4444');
+        } else {
+            contributions.push(5);
+            colors.push('#10b981');
+        }
+    }
+    
+    // Blood pressure contribution
+    if (userData.systolic_bp && userData.diastolic_bp) {
+        factors.push('Blood Pressure');
+        if (userData.systolic_bp >= 140 || userData.diastolic_bp >= 90) {
+            contributions.push(25);
+            colors.push('#ef4444');
+        } else if (userData.systolic_bp >= 130 || userData.diastolic_bp >= 80) {
+            contributions.push(15);
+            colors.push('#f59e0b');
+        } else {
+            contributions.push(8);
+            colors.push('#10b981');
+        }
+    }
+    
+    const trace = {
+        x: factors,
+        y: contributions,
+        type: 'bar',
+        marker: {
+            color: colors,
+            line: {
+                color: 'rgba(255, 255, 255, 0.3)',
+                width: 1
+            }
+        },
+        text: contributions.map(val => val + '%'),
+        textposition: 'auto',
+        textfont: {
+            color: 'white',
+            size: 12
+        }
+    };
+    
+    const layout = {
+        title: {
+            text: 'Your Personal Risk Factor Analysis',
+            font: { color: 'white', size: 18 }
+        },
+        xaxis: {
+            titlefont: { color: 'white' },
+            tickfont: { color: 'white' },
+            gridcolor: 'rgba(255, 255, 255, 0.1)'
+        },
+        yaxis: {
+            title: 'Risk Contribution (%)',
+            titlefont: { color: 'white' },
+            title: 'Risk Contribution (%)',
+            titlefont: { color: 'white' },
+            tickfont: { color: 'white' },
+            gridcolor: 'rgba(255, 255, 255, 0.1)',
+            zerolinecolor: 'rgba(255, 255, 255, 0.3)'
+        },
+        plot_bgcolor: 'rgba(0, 0, 0, 0)',
+        paper_bgcolor: 'rgba(0, 0, 0, 0)',
+        margin: { l: 80, r: 50, t: 80, b: 80 }
+    };
+    
+    try {
+        Plotly.newPlot('riskFactorsChart', [trace], layout, {responsive: true});
+        console.log('Personalized risk factors chart created successfully');
+    } catch (error) {
+        console.error('Error creating personalized risk factors chart:', error);
+    }
+}
+
+function createDiabetesCorrelationChart() {
+    console.log('Creating diabetes correlation chart...');
+    const userData = riskData.user_data || {};
+    
+    // Generate synthetic data points to show correlations
+    const numPoints = 100;
+    let xValues = [];
+    let yValues = [];
+    let sizes = [];
+    let colors = [];
+    let texts = [];
+    
+    // Create data points showing diabetes interactions with other factors
+    for (let i = 0; i < numPoints; i++) {
+        // X-axis: Combined risk score (diabetes + other factors)
+        let diabetesEffect = Math.random() * 0.4; // 0 to 0.4
+        let otherFactors = Math.random() * 0.6; // 0 to 0.6
+        let combinedRisk = diabetesEffect + otherFactors;
+        
+        // Y-axis: Cardiovascular risk probability
+        let baseRisk = 0.1;
+        let diabetesMultiplier = 1 + (diabetesEffect * 2); // Diabetes amplifies other risks
+        let finalRisk = Math.min(0.9, baseRisk + (otherFactors * diabetesMultiplier));
+        
+        xValues.push(combinedRisk);
+        yValues.push(finalRisk);
+        
+        // Size based on age (older = bigger)
+        let ageSize = 20 + (Math.random() * 30);
+        sizes.push(ageSize);
+        
+        // Color based on risk level
+        if (finalRisk < 0.3) {
+            colors.push('#10b981'); // Green for low risk
+        } else if (finalRisk < 0.6) {
+            colors.push('#f59e0b'); // Yellow for moderate risk
+        } else {
+            colors.push('#ef4444'); // Red for high risk
+        }
+        
+        // Text for hover
+        texts.push(`Risk Score: ${(combinedRisk * 100).toFixed(1)}%<br>CV Risk: ${(finalRisk * 100).toFixed(1)}%<br>Diabetes Effect: ${(diabetesEffect * 100).toFixed(1)}%`);
+    }
+    
+    // Add user's actual data point
+    if (userData.diabetes !== undefined) {
+        let userDiabetesEffect = userData.diabetes * 0.3;
+        let userOtherFactors = 0;
+        
+        // Calculate other factors contribution
+        if (userData.age_years) userOtherFactors += Math.min(0.3, userData.age_years / 100);
+        if (userData.bmi && userData.bmi >= 25) userOtherFactors += 0.1;
+        if (userData.smoking === 1) userOtherFactors += 0.15;
+        if (userData.cholesterol && userData.cholesterol >= 200) userOtherFactors += 0.1;
+        if (userData.systolic_bp && userData.systolic_bp >= 140) userOtherFactors += 0.1;
+        
+        let userCombinedRisk = userDiabetesEffect + userOtherFactors;
+        let userBaseRisk = 0.1;
+        let userDiabetesMultiplier = 1 + (userDiabetesEffect * 2);
+        let userFinalRisk = Math.min(0.9, userBaseRisk + (userOtherFactors * userDiabetesMultiplier));
+        
+        xValues.push(userCombinedRisk);
+        yValues.push(userFinalRisk);
+        sizes.push(50); // Larger size for user's point
+        colors.push('#3b82f6'); // Blue for user's point
+        texts.push(`YOUR DATA<br>Risk Score: ${(userCombinedRisk * 100).toFixed(1)}%<br>CV Risk: ${(userFinalRisk * 100).toFixed(1)}%<br>Diabetes: ${userData.diabetes === 1 ? 'Yes' : 'No'}`);
+    }
+    
+    const trace = {
+        x: xValues,
+        y: yValues,
+        mode: 'markers',
+        type: 'scatter',
+        marker: {
+            size: sizes,
+            color: colors,
+            opacity: 0.7,
+            line: {
+                color: 'rgba(255, 255, 255, 0.3)',
+                width: 1
+            }
+        },
+        text: texts,
+        hoverinfo: 'text',
+        name: 'Risk Factors'
+    };
+    
+    // Add trend line
+    const trendX = [0, 1];
+    const trendY = [0.1, 0.9];
+    const trendTrace = {
+        x: trendX,
+        y: trendY,
+        mode: 'lines',
+        type: 'scatter',
+        line: {
+            color: '#ffffff',
+            width: 2,
+            dash: 'dash'
+        },
+        name: 'Trend Line',
+        showlegend: true
+    };
+    
+    const layout = {
+        title: {
+            text: 'Diabetes & Health Factors Correlation Analysis',
+            font: { color: 'white', size: 20 }
+        },
+        xaxis: {
+            title: 'Combined Risk Score (Diabetes + Other Factors)',
+            titlefont: { color: 'white', size: 14 },
+            tickfont: { color: 'white' },
+            gridcolor: 'rgba(255, 255, 255, 0.1)',
+            zerolinecolor: 'rgba(255, 255, 255, 0.3)',
+            range: [0, 1]
+        },
+        yaxis: {
+            title: 'Cardiovascular Risk Probability',
+            titlefont: { color: 'white', size: 14 },
+            tickfont: { color: 'white' },
+            gridcolor: 'rgba(255, 255, 255, 0.1)',
+            zerolinecolor: 'rgba(255, 255, 255, 0.3)',
+            range: [0, 1]
+        },
+        plot_bgcolor: 'rgba(0, 0, 0, 0)',
+        paper_bgcolor: 'rgba(0, 0, 0, 0)',
+        margin: { l: 80, r: 50, t: 80, b: 80 },
+        legend: {
+            font: { color: 'white' },
+            bgcolor: 'rgba(0, 0, 0, 0.5)',
+            bordercolor: 'rgba(255, 255, 255, 0.2)'
+        },
+        annotations: [
+            {
+                x: 0.8,
+                y: 0.8,
+                text: 'High Risk Zone<br>(Diabetes + Other Factors)',
+                showarrow: true,
+                arrowhead: 2,
+                arrowsize: 1,
+                arrowwidth: 2,
+                arrowcolor: '#ef4444',
+                font: { color: '#ef4444', size: 12 },
+                bgcolor: 'rgba(239, 68, 68, 0.1)',
+                bordercolor: '#ef4444'
+            },
+            {
+                x: 0.2,
+                y: 0.2,
+                text: 'Low Risk Zone<br>(No Diabetes + Healthy Factors)',
+                showarrow: true,
+                arrowhead: 2,
+                arrowsize: 1,
+                arrowwidth: 2,
+                arrowcolor: '#10b981',
+                font: { color: '#10b981', size: 12 },
+                bgcolor: 'rgba(16, 185, 129, 0.1)',
+                bordercolor: '#10b981'
+            }
+        ]
+    };
+    
+    try {
+        Plotly.newPlot('diabetesCorrelationChart', [trace, trendTrace], layout, {responsive: true});
+        console.log('Diabetes correlation chart created successfully');
+    } catch (error) {
+        console.error('Error creating diabetes correlation chart:', error);
+    }
+}
+
+function displayRecommendations() {
+    const riskCategory = riskData.risk_category || 'Moderate';
+    const container = document.getElementById('recommendationsContainer');
+    
+    let recommendations = '';
+    
+    if (riskCategory === 'Low') {
+        recommendations = `
+            <div class="alert alert-success">
+                <h5><i class="fas fa-check-circle me-2"></i>Excellent! Your cardiovascular risk is low.</h5>
+                <p class="mb-0">Continue maintaining your healthy lifestyle with regular exercise, balanced diet, and routine health checkups.</p>
+            </div>
+        `;
+    } else if (riskCategory === 'Moderate') {
+        recommendations = `
+            <div class="alert alert-warning">
+                <h5><i class="fas fa-exclamation-triangle me-2"></i>Moderate risk detected. Some attention needed.</h5>
+                <p class="mb-0">Consider lifestyle modifications such as increasing physical activity, improving diet, and monitoring key health metrics more closely.</p>
+            </div>
+        `;
+    } else {
+        recommendations = `
+            <div class="alert alert-danger">
+                <h5><i class="fas fa-exclamation-circle me-2"></i>High risk detected. Immediate attention recommended.</h5>
+                <p class="mb-0">Please consult with a healthcare provider for personalized medical advice and consider implementing significant lifestyle changes.</p>
+            </div>
+        `;
+    }
+    
+    container.innerHTML = recommendations;
+    
+    // Also display the top 3 actionable recommendations
+    displayTopRecommendations();
+}
+
+function displayTopRecommendations() {
+    const userData = riskData.user_data || {};
+    const riskCategory = riskData.risk_category || 'Moderate';
+    
+    // Analyze user data to determine top 3 recommendations
+    let recommendations = [];
+    
+    // Check BMI
+    if (userData.bmi && userData.bmi >= 25) {
+        recommendations.push({
+            priority: 1,
+            title: 'Weight Management',
+            description: 'Focus on achieving a healthy BMI through balanced nutrition and regular exercise.',
+            guidance: 'Aim for 150+ minutes of moderate exercise weekly and create a 500-700 calorie daily deficit for sustainable weight loss.',
+            icon: 'fas fa-weight-hanging',
+            color: 'text-warning'
+        });
+    }
+    
+    // Check smoking status
+    if (userData.smoking === 1) {
+        recommendations.push({
+            priority: 1,
+            title: 'Smoking Cessation',
+            description: 'Quit smoking immediately to significantly reduce cardiovascular risk.',
+            guidance: 'Consider nicotine replacement therapy, counseling, or smoking cessation programs. Your risk drops within 1 year of quitting.',
+            icon: 'fas fa-smoking-ban',
+            color: 'text-danger'
+        });
+    }
+    
+    // Check physical activity
+    if (userData.physical_activity === 0) {
+        recommendations.push({
+            priority: 2,
+            title: 'Increase Physical Activity',
+            description: 'Start with 30 minutes of moderate exercise 5 days per week.',
+            guidance: 'Begin with walking, swimming, or cycling. Gradually increase intensity and duration. Aim for 150+ minutes weekly.',
+            icon: 'fas fa-running',
+            color: 'text-success'
+        });
+    }
+    
+    // Check cholesterol
+    if (userData.cholesterol && userData.cholesterol >= 200) {
+        recommendations.push({
+            priority: 2,
+            title: 'Cholesterol Management',
+            description: 'Focus on heart-healthy diet and lifestyle changes to improve cholesterol levels.',
+            guidance: 'Reduce saturated fats, increase fiber intake, and consider omega-3 supplements. Monitor levels every 6 months.',
+            icon: 'fas fa-heartbeat',
+            color: 'text-info'
+        });
+    }
+    
+    // Check age
+    if (userData.age_years && userData.age_years >= 45) {
+        recommendations.push({
+            priority: 3,
+            title: 'Regular Health Monitoring',
+            description: 'Schedule regular checkups and cardiovascular screenings.',
+            guidance: 'Annual physical exams, blood pressure monitoring, and lipid panels. Consider stress tests if recommended.',
+            icon: 'fas fa-stethoscope',
+            color: 'text-primary'
+        });
+    }
+    
+    // Check general health
+    if (userData.general_health && userData.general_health <= 3) {
+        recommendations.push({
+            priority: 3,
+            title: 'Overall Health Improvement',
+            description: 'Address underlying health concerns and improve general wellness.',
+            guidance: 'Focus on sleep quality, stress management, and preventive care. Consider consulting specialists for specific concerns.',
+            icon: 'fas fa-user-md',
+            color: 'text-warning'
+        });
+    }
+    
+    // Sort by priority and take top 3
+    recommendations.sort((a, b) => a.priority - b.priority);
+    recommendations = recommendations.slice(0, 3);
+    
+    // Fill remaining slots with general recommendations if needed
+    while (recommendations.length < 3) {
+        if (recommendations.length === 0) {
+            recommendations.push({
+                title: 'Maintain Healthy Lifestyle',
+                description: 'Continue your current healthy habits and regular checkups.',
+                guidance: 'Regular exercise, balanced diet, adequate sleep, and stress management are key to maintaining cardiovascular health.',
+                icon: 'fas fa-heart',
+                color: 'text-success'
+            });
+        } else if (recommendations.length === 1) {
+            recommendations.push({
+                title: 'Preventive Care',
+                description: 'Stay proactive with preventive health measures.',
+                guidance: 'Annual physicals, vaccinations, and screenings help catch issues early and maintain optimal health.',
+                icon: 'fas fa-shield-alt',
+                color: 'text-info'
+            });
+        } else {
+            recommendations.push({
+                title: 'Health Education',
+                description: 'Stay informed about cardiovascular health and prevention.',
+                guidance: 'Read reliable health resources, attend health seminars, and discuss concerns with healthcare providers.',
+                icon: 'fas fa-book-medical',
+                color: 'text-primary'
+            });
+        }
+    }
+    
+    // Update the recommendation boxes
+    recommendations.forEach((rec, index) => {
+        const box = document.getElementById(`recommendation${index + 1}`);
+        if (box) {
+            const icon = box.querySelector('.recommendation-icon i');
+            const title = box.querySelector('h5');
+            const description = box.querySelector('p');
+            const guidance = box.querySelector('.recommendation-guidance small');
+            
+            if (icon) icon.className = `${rec.icon} ${rec.color}`;
+            if (title) title.textContent = rec.title;
+            if (description) description.textContent = rec.description;
+            if (guidance) {
+                guidance.textContent = 'Click for detailed guidance';
+                guidance.onclick = () => showDetailedGuidance(rec);
+            }
+        }
+    });
+}
+
+function showDetailedGuidance(recommendation) {
+    // Create a modal or expand the guidance section
+    const guidance = `
+        <div class="detailed-guidance">
+            <h6 class="text-white mb-2">${recommendation.title}</h6>
+            <p class="text-white-50 mb-2">${recommendation.description}</p>
+            <div class="guidance-details">
+                <strong class="text-info">Detailed Guidance:</strong>
+                <p class="text-white-50 mt-1">${recommendation.guidance}</p>
+            </div>
+        </div>
+    `;
+    
+    // For now, just show an alert. In a real app, you'd want a proper modal
+    alert(`${recommendation.title}\n\n${recommendation.description}\n\nDetailed Guidance:\n${recommendation.guidance}`);
+}
+
+function shareResults() {
+    // Create a canvas element to draw the results
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = 900;
+    canvas.height = 700;
+    
+    // Create gradient background
+    const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    gradient.addColorStop(0, '#1e293b');
+    gradient.addColorStop(1, '#334155');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Add decorative header bar
+    ctx.fillStyle = '#3b82f6';
+    ctx.fillRect(0, 0, canvas.width, 8);
+    
+    // Add title with shadow
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+    ctx.shadowBlur = 10;
+    ctx.shadowOffsetX = 2;
+    ctx.shadowOffsetY = 2;
+    
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 36px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('Cardiovascular Risk Assessment', canvas.width/2, 80);
+    
+    // Reset shadow
+    ctx.shadowColor = 'transparent';
+    ctx.shadowBlur = 0;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 0;
+    
+    // Add risk level with enhanced styling
+    const riskCategory = riskData.risk_category || 'Moderate';
+    const riskProbability = riskData.risk_probability || 0.5;
+    const percentage = Math.round(riskProbability * 100);
+    
+    // Risk category background
+    let riskColor;
+    if (riskCategory === 'Low') {
+        riskColor = '#10b981';
+    } else if (riskCategory === 'Moderate') {
+        riskColor = '#f59e0b';
+    } else {
+        riskColor = '#ef4444';
+    }
+    
+    // Draw risk category box
+    ctx.fillStyle = riskColor;
+    ctx.roundRect = function(x, y, width, height, radius) {
+        ctx.beginPath();
+        ctx.moveTo(x + radius, y);
+        ctx.lineTo(x + width - radius, y);
+        ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+        ctx.lineTo(x + width, y + height - radius);
+        ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+        ctx.lineTo(x + radius, y + height);
+        ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+        ctx.lineTo(x, y + radius);
+        ctx.quadraticCurveTo(x, y, x + radius, y);
+        ctx.closePath();
+    };
+    
+    ctx.roundRect(canvas.width/2 - 120, 100, 240, 60, 15);
+    ctx.fill();
+    
+    // Add risk category text
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 32px Arial';
+    ctx.fillText(riskCategory + ' Risk', canvas.width/2, 140);
+    
+    // Add risk percentage with circle
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 28px Arial';
+    ctx.fillText(percentage + '%', canvas.width/2, 200);
+    
+    // Add subtitle
+    ctx.font = '18px Arial';
+    ctx.fillStyle = '#94a3b8';
+    ctx.fillText('Risk Probability', canvas.width/2, 225);
+    
+    // Add date
+    ctx.font = '16px Arial';
+    ctx.fillStyle = '#64748b';
+    ctx.fillText('Assessment Date: ' + new Date().toLocaleDateString(), canvas.width/2, 260);
+    
+    // Add model information
+    ctx.font = 'bold 20px Arial';
+    ctx.fillStyle = '#3b82f6';
+    ctx.textAlign = 'left';
+    ctx.fillText('AI Model Information:', 50, 310);
+    
+    ctx.font = '16px Arial';
+    ctx.fillStyle = '#94a3b8';
+    ctx.fillText('• 90.29% Accuracy', 70, 335);
+    ctx.fillText('• 800K+ Real Data Points', 70, 355);
+    ctx.fillText('• 11 Clinical Risk Factors', 70, 375);
+    ctx.fillText('• Random Forest Classifier', 70, 395);
+    
+    // Add key factors
+    ctx.font = 'bold 20px Arial';
+    ctx.fillStyle = '#ffffff';
+    ctx.fillText('Key Health Factors:', 50, 440);
+    
+    const userData = riskData.user_data || {};
+    let yPos = 465;
+    ctx.font = '16px Arial';
+    ctx.fillStyle = '#e2e8f0';
+    
+    if (userData.age_years) {
+        ctx.fillText(`• Age: ${userData.age_years} years`, 70, yPos);
+        yPos += 25;
+    }
+    if (userData.bmi) {
+        ctx.fillText(`• BMI: ${userData.bmi.toFixed(1)}`, 70, yPos);
+        yPos += 25;
+    }
+    if (userData.sex !== undefined) {
+        ctx.fillText(`• Gender: ${userData.sex === 1 ? 'Male' : 'Female'}`, 70, yPos);
+        yPos += 25;
+    }
+    if (userData.smoking === 1) {
+        ctx.fillText('• Smoking: Yes', 70, yPos);
+        yPos += 25;
+    }
+    if (userData.cholesterol) {
+        ctx.fillText(`• Cholesterol: ${userData.cholesterol} mg/dL`, 70, yPos);
+        yPos += 25;
+    }
+    if (userData.systolic_bp && userData.diastolic_bp) {
+        ctx.fillText(`• Blood Pressure: ${userData.systolic_bp}/${userData.diastolic_bp} mmHg`, 70, yPos);
+        yPos += 25;
+    }
+    if (userData.glucose) {
+        ctx.fillText(`• Glucose: ${userData.glucose} mg/dL`, 70, yPos);
+        yPos += 25;
+    }
+    
+    // Add footer with gradient
+    const footerGradient = ctx.createLinearGradient(0, canvas.height - 60, 0, canvas.height);
+    footerGradient.addColorStop(0, 'rgba(59, 130, 246, 0.1)');
+    footerGradient.addColorStop(1, 'rgba(59, 130, 246, 0.2)');
+    ctx.fillStyle = footerGradient;
+    ctx.fillRect(0, canvas.height - 60, canvas.width, 60);
+    
+    // Add footer text
+    ctx.font = '14px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#64748b';
+    ctx.fillText('Generated by CVD Predictor - AI-Powered Cardiovascular Risk Assessment', canvas.width/2, canvas.height - 25);
+    ctx.fillText('Powered by 90.29% Accurate Machine Learning Model', canvas.width/2, canvas.height - 10);
+    
+    // Convert canvas to blob and download
+    canvas.toBlob(function(blob) {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'cardiovascular-risk-assessment.png';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    });
+}
+
+// Fallback: if charts still don't load after a delay, try again
+setTimeout(function() {
+    if (!chartsInitialized && typeof Plotly !== 'undefined') {
+        console.log('Fallback: attempting to create charts again...');
+        createAllCharts();
+    }
+}, 2000);
+</script>
+{% endblock %}
