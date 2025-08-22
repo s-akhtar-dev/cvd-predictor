@@ -17,29 +17,96 @@ from config.paths import HIGH_PERFORMANCE_MODEL_PATH, HIGH_PERFORMANCE_SCALER_PA
 app = Flask(__name__)
 app.secret_key = 'cardiovascular_risk_prediction_secret_key'
 
-# Load the trained model
-try:
-    model = joblib.load(HIGH_PERFORMANCE_MODEL_PATH)
-    print("Real data 90% performance model loaded successfully!")
-except Exception as e:
-    print(f"Error loading model: {e}")
-    model = None
+# Load the trained model with fallback paths
+model = None
+scaler = None
+model_features = None
 
-# Load the scaler
-try:
-    scaler = joblib.load(HIGH_PERFORMANCE_SCALER_PATH)
-    print("Real data 90% performance scaler loaded successfully!")
-except Exception as e:
-    print(f"Error loading scaler: {e}")
-    scaler = None
+# Try multiple paths for model loading
+model_paths = [
+    HIGH_PERFORMANCE_MODEL_PATH,
+    os.path.join('models', 'real_data_90_percent_model.joblib'),
+    os.path.join(os.getcwd(), 'models', 'real_data_90_percent_model.joblib'),
+    '/app/models/real_data_90_percent_model.joblib'
+]
 
-# Load the feature names for the real data 90% model
-try:
-    model_features = joblib.load(os.path.join('models', 'real_data_90_percent_features.joblib'))
-    print("Real data model features loaded successfully!")
-except Exception as e:
-    print(f"Error loading model features: {e}")
-    model_features = None
+scaler_paths = [
+    HIGH_PERFORMANCE_SCALER_PATH,
+    os.path.join('models', 'real_data_90_percent_scaler.joblib'),
+    os.path.join(os.getcwd(), 'models', 'real_data_90_percent_scaler.joblib'),
+    '/app/models/real_data_90_percent_scaler.joblib'
+]
+
+features_paths = [
+    os.path.join('models', 'real_data_90_percent_features.joblib'),
+    os.path.join(os.getcwd(), 'models', 'real_data_90_percent_features.joblib'),
+    '/app/models/real_data_90_percent_features.joblib'
+]
+
+# Try to load the model
+for model_path in model_paths:
+    try:
+        model = joblib.load(model_path)
+        print(f"Real data 90% performance model loaded successfully from: {model_path}")
+        break
+    except Exception as e:
+        print(f"Failed to load model from {model_path}: {e}")
+        continue
+
+# Try to load the scaler
+for scaler_path in scaler_paths:
+    try:
+        scaler = joblib.load(scaler_path)
+        print(f"Real data 90% performance scaler loaded successfully from: {scaler_path}")
+        break
+    except Exception as e:
+        print(f"Failed to load scaler from {scaler_path}: {e}")
+        continue
+
+# Try to load the features
+for features_path in features_paths:
+    try:
+        model_features = joblib.load(features_path)
+        print(f"Real data model features loaded successfully from: {features_path}")
+        break
+    except Exception as e:
+        print(f"Failed to load features from {features_path}: {e}")
+        continue
+
+# Check if all components loaded successfully
+if model is None or scaler is None or model_features is None:
+    print("WARNING: Some model components failed to load!")
+    print(f"Model loaded: {model is not None}")
+    print(f"Scaler loaded: {scaler is not None}")
+    print(f"Features loaded: {model_features is not None}")
+    
+    # Debug: List current directory and models directory
+    print(f"Current working directory: {os.getcwd()}")
+    print(f"Base directory: {BASE_DIR}")
+    
+    # Check if models directory exists
+    models_dir = os.path.join(os.getcwd(), 'models')
+    if os.path.exists(models_dir):
+        print(f"Models directory exists: {models_dir}")
+        try:
+            model_files = os.listdir(models_dir)
+            print(f"Files in models directory: {model_files}")
+        except Exception as e:
+            print(f"Error listing models directory: {e}")
+    else:
+        print(f"Models directory does not exist: {models_dir}")
+        
+    # Check Railway-specific path
+    railway_models_dir = '/app/models'
+    if os.path.exists(railway_models_dir):
+        print(f"Railway models directory exists: {railway_models_dir}")
+        try:
+            railway_model_files = os.listdir(railway_models_dir)
+            print(f"Files in Railway models directory: {railway_model_files}")
+        except Exception as e:
+            print(f"Error listing Railway models directory: {e}")
+    else:
+        print(f"Railway models directory does not exist: {railway_models_dir}")
 
 def create_bmi_category(bmi):
     """Create BMI category based on BMI value"""
